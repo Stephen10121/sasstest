@@ -1,5 +1,12 @@
-export async function load({ parent }) {
-    const data = await parent();
+import { redirect } from '@sveltejs/kit';
 
-    console.log(data);
+export async function load({ locals }) {
+
+    if (!locals.user) {
+        return redirect(301, "/");
+    }
+
+    return {
+        user: locals.user
+    }
 }
