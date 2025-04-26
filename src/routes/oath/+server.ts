@@ -1,13 +1,16 @@
 import { redirect } from '@sveltejs/kit';
 
-export async function GET({ url, locals: { supabase }, cookies }) {
+export async function GET({ url, locals: { supabase } }) {
     const code = url.searchParams.get("code") as string;
-    const next = url.searchParams.get("next") ?? "/";
 
     if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+
         if (!error) {
-            throw redirect(303, "/dashboard");
+            const justCreated = ((new Date(data.user.updated_at ? data.user.updated_at : "")).getTime() - (new Date(data.user.created_at)).getTime()) / 1000 < 5;
+            console.log({justCreated});
+
+            throw redirect(303, "/home");
         }
     }
 
