@@ -3,3 +3,4 @@
 </script>
 
 Dashboard page. {data.user.user_metadata.name}
+<a href="/dashboard/test">tesr</a>
