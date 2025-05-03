@@ -1,6 +1,64 @@
-import { json } from "@sveltejs/kit";
+import { createHash } from 'crypto';
+import { existsSync, mkdirSync } from 'fs';
+import { writeFile, appendFile } from 'fs/promises';
+import path from 'path';
 
-export async function POST() {
-    console.log("yooooo brto");
-    return json({msg: "ok"});
+export async function POST({ request }) {
+    const fileChunkStatus = request.headers.get("File-Chunk-Status");
+    const encodedFileName = request.headers.get("File-Name");
+    if (!encodedFileName) {
+        return new Response('Missing File-Name header', { status: 400 });
+    }
+
+    const userId = request.headers.get("User-Id");
+    if (!userId) {
+        return new Response('Missing User-Id header', { status: 400 });
+    }
+    const hashedId = createHash('sha256').update(userId).digest("hex");
+
+    const filePathHeader = request.headers.get("File-Path");
+    if (!filePathHeader) {
+        return new Response('Missing File-Path header', { status: 400 });
+    }
+
+    const fileName = decodeURI(encodedFileName);
+    
+    try {
+        if (!request.body) {
+            return new Response('No file uploaded', { status: 400 });
+        }
+
+        if (fileName.includes("\\") || fileName.includes("/")) {
+            return new Response('Invalid File Name', { status: 400 });
+        }
+
+        if (!existsSync("./files/" + hashedId)) {
+            mkdirSync("./files/" + hashedId);
+        }
+        
+        if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader))) && !filePathHeader.includes("../")) {
+            if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader, fileName)))) {
+                return new Response('File Already Exists', { status: 409, statusText: "File Already Exists" });
+            }
+            const readableStream = request.body;
+            const filePath = "./files/" + path.join(hashedId, filePathHeader, fileName);
+    
+            if (fileChunkStatus === "first" || fileChunkStatus === "firstlast") {
+                //@ts-ignore
+                await writeFile(filePath, readableStream);
+            } else {
+                //@ts-ignore
+                await appendFile(filePath, readableStream);
+            }
+            
+            return new Response(JSON.stringify({ message: 'File uploaded successfully!' }), { status: 200 });
+        } else {
+            return new Response('Invalid File Path', { status: 400 });
+        }
+
+
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        return new Response('Internal server error', { status: 500 });
+    }
 }
