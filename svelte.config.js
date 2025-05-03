@@ -15,7 +15,10 @@ const config = {
 		csrf: {
 			// We will be checking the origin ourselves.
 			checkOrigin: false
-		}
+		},
+		// alias: {
+		// 	"@/*": "./src/lib/*"
+		// }
 	}
 };
 

@@ -4,7 +4,6 @@
     export let data;
 </script>
 
-Dashboard page. {data.user.user_metadata.name} {data.user.id}
+Dashboard page. {data.user.user_metadata.name}
 <a href="/home/test">tesr</a>
-
-<FileUploader />
+<FileUploader userId={data.user.id} />

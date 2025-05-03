@@ -34,7 +34,7 @@ export async function POST({ request }) {
         }
 
         if (!existsSync("./files/" + hashedId)) {
-            mkdirSync("./files/" + hashedId);
+            return new Response('Invalid user id', { status: 401 });
         }
         
         if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader))) && !filePathHeader.includes("../")) {

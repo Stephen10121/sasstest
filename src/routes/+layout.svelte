@@ -1,6 +1,7 @@
 <script lang="ts">
     import LoggedIn from "$lib/LoggedIn.svelte";
     import NotLoggedIn from "$lib/NotLoggedIn.svelte";
+
     export let data;
 </script>
 
