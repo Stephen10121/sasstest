@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { existsSync, renameSync } from "fs";
+import { existsSync, renameSync, rmSync, unlinkSync } from "fs";
 import path from "path";
 
 export const actions = {
@@ -18,8 +18,7 @@ export const actions = {
         const type = formData.get("type") as string;
         const oldFileName = formData.get("oldFileName") as string;
         const newFileName = formData.get("newFileName") as string;
-
-        console.log({ id, filePath, type, oldFileName, newFileName });
+        const fileOrFolder = type === "file" ? "File" : "Folder";
 
         if (!filePath || !type || !oldFileName || !newFileName) {
             return {
@@ -31,21 +30,21 @@ export const actions = {
         if (filePath.includes("\\") || filePath.includes("../")) {
             return {
                 success: false,
-                errorMsg: "Invalid File Path."
+                errorMsg: "Invalid " + fileOrFolder + " Path."
             }
         }
 
         if (oldFileName.includes("\\") || oldFileName.includes("/")) {
             return {
                 success: false,
-                errorMsg: "Invalid Old File Name."
+                errorMsg: "Invalid Old " + fileOrFolder + " Name."
             }
         }
 
         if (newFileName.includes("\\") || newFileName.includes("/")) {
             return {
                 success: false,
-                errorMsg: "Invalid File Name."
+                errorMsg: "Invalid " + fileOrFolder + " Name."
             }
         }
 
@@ -56,31 +55,11 @@ export const actions = {
             }
         }
 
-        // if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader))) && !filePathHeader.includes("../")) {
-        //     if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader, fileName)))) {
-        //         return new Response('File Already Exists', { status: 409, statusText: "File Already Exists" });
-        //     }
-        //     const readableStream = request.body;
-        //     const filePath = "./files/" + path.join(hashedId, filePathHeader, fileName);
-
-        //     if (fileChunkStatus === "first" || fileChunkStatus === "firstlast") {
-        //         //@ts-ignore
-        //         await writeFile(filePath, readableStream);
-        //     } else {
-        //         //@ts-ignore
-        //         await appendFile(filePath, readableStream);
-        //     }
-            
-        //     return new Response(JSON.stringify({ message: 'File uploaded successfully!' }), { status: 200 });
-        // } else {
-        //     return new Response('Invalid File Path', { status: 400 });
-        // }
-
         const oldFile = path.resolve("./files/" + path.join(hashedId, filePath.split("/").slice(2).join("/"), oldFileName));
         if(!existsSync(oldFile)) {
             return {
                 success: false,
-                errorMsg: "File Doesn't Exist."
+                errorMsg: fileOrFolder + " Doesn't Exist."
             }
         }
 
@@ -88,7 +67,7 @@ export const actions = {
         if(existsSync(newFile)) {
             return {
                 success: false,
-                errorMsg: "Renamed file already Exists."
+                errorMsg: "Renamed " + fileOrFolder + " already Exists."
             }
         }
 
@@ -99,7 +78,74 @@ export const actions = {
             console.log(err);
             return {
                 success: false,
-                errorMsg: "Failed to rename."
+                errorMsg: "Failed to rename " + fileOrFolder + "."
+            }
+        }
+    },
+    deleteFile: async ({ locals, request }) => {
+        const id = locals.user?.id;
+        if (!id) {
+            return {
+                success: false,
+                errorMsg: "Unauthorized Access."
+            }
+        }
+
+        const hashedId = createHash('sha256').update(id).digest("hex");
+        const formData = await request.formData();
+        const filePath = formData.get("filePath") as string;
+        const type = formData.get("type") as string;
+        const fileName = formData.get("fileName") as string;
+        const fileOrFolder = type === "file" ? "File" : "Folder";
+
+        if (!filePath || !type || !fileName) {
+            return {
+                success: false,
+                errorMsg: "Missing Parameters."
+            }
+        }
+        
+        if (filePath.includes("\\") || filePath.includes("../")) {
+            return {
+                success: false,
+                errorMsg: "Invalid " + fileOrFolder + " Path."
+            }
+        }
+
+        if (fileName.includes("\\") || fileName.includes("/")) {
+            return {
+                success: false,
+                errorMsg: "Invalid " + fileOrFolder + " Name."
+            }
+        }
+
+        if (!existsSync("./files/" + hashedId)) {
+            return {
+                success: false,
+                errorMsg: "Invalid User Id."
+            }
+        }
+
+        const oldFile = path.resolve("./files/" + path.join(hashedId, filePath.split("/").slice(2).join("/"), fileName));
+        if(!existsSync(oldFile)) {
+            return {
+                success: false,
+                errorMsg: fileOrFolder + " Doesn't Exist."
+            }
+        }
+
+        try {
+            if (type === "file") {
+                unlinkSync(oldFile)
+            } else {
+                rmSync(oldFile, { recursive: true, force: true });
+            }
+            return { success: true } 
+        } catch (err) {
+            console.log(err);
+            return {
+                success: false,
+                errorMsg: "Failed to delete " + fileOrFolder+ "."
             }
         }
     }

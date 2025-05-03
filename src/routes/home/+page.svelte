@@ -25,6 +25,7 @@
     let showNewFolderDialog = $state(false);
 
 	let renamefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
+	let deletefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 </script>
 
 <div>
@@ -82,7 +83,7 @@
 										<DropdownMenu.Item>Share</DropdownMenu.Item>
 										<DropdownMenu.Item>Download</DropdownMenu.Item>
 										<DropdownMenu.Separator />
-										<DropdownMenu.Item class="text-red-500">Delete</DropdownMenu.Item>
+										<DropdownMenu.Item onclick={() => {deletefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}} class="text-red-500">Delete</DropdownMenu.Item>
 									</DropdownMenu.Content>
 								</DropdownMenu.Root>
 							</div>
@@ -144,7 +145,7 @@
                                     <DropdownMenu.Item>Share</DropdownMenu.Item>
                                     <DropdownMenu.Item>Download</DropdownMenu.Item>
                                     <DropdownMenu.Separator />
-                                    <DropdownMenu.Item class="text-red-500">Delete</DropdownMenu.Item>
+                                    <DropdownMenu.Item onclick={() => {deletefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}} class="text-red-500">Delete</DropdownMenu.Item>
                                 </DropdownMenu.Content>
                             </DropdownMenu.Root>
                         </div>
@@ -206,6 +207,50 @@
 			</form>
 			<Dialog.Footer>
 				<Button type="submit" form="renameFileForm">Rename</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	{/if}
+</Dialog.Root>
+
+<Dialog.Root open={deletefilePopup !== null} onOpenChange={(e) => {if (!e) deletefilePopup = null}}>
+	{#if deletefilePopup !== null}
+		<Dialog.Content class="sm:max-w-[425px]">
+			<Dialog.Header>
+				<Dialog.Title>Delete {deletefilePopup.type === "file" ? "File" : "Folder"}</Dialog.Title>
+				<Dialog.Description>
+					Are you sure you want to delete "{deletefilePopup.fileName}"?
+				</Dialog.Description>
+			</Dialog.Header>
+			<form
+				id="deleteFileForm"
+				method="POST"
+				action="?/deleteFile"
+				class="grid gap-4 py-4"
+				use:enhance={() => {
+					const tLoadingMsg = toast.loading(`Deleting.`);
+
+					return async ({ update }) => {
+						await update();
+						toast.dismiss(tLoadingMsg);
+						if (form) {
+							if(form.success) {
+								toast.success("Deleted!");
+								deletefilePopup = null;
+							} else {
+								toast.error("Delete Failed", {
+									description: form.errorMsg
+								})
+							}
+						}
+					}
+				}}
+			>
+				<input type="hidden" name="filePath" value={deletefilePopup.filePath} />
+				<input type="hidden" name="type" value={deletefilePopup.type} />
+				<input type="hidden" name="fileName" value={deletefilePopup.fileName} />
+			</form>
+			<Dialog.Footer>
+				<Button type="submit" variant="destructive" form="deleteFileForm">I'm Sure</Button>
 			</Dialog.Footer>
 		</Dialog.Content>
 	{/if}
