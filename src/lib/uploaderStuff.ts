@@ -68,7 +68,7 @@ async function uploadBlobToServer(blob: Blob, fileTracker: FileUploadTracker, fi
                 "File-Chunk-Status": fileTracker.first ? "first" : "middle",
                 "File-Name": encodeURI(fileName),
                 "User-Id": userId,
-                "File-Path": filePath
+                "File-Path": encodeURI(filePath)
             },
             body: blob.stream().pipeThrough(progressTrackingStream),
             //@ts-ignore
