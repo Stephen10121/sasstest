@@ -3,14 +3,14 @@ import { existsSync, mkdirSync } from 'fs';
 import { writeFile, appendFile } from 'fs/promises';
 import path from 'path';
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
     const fileChunkStatus = request.headers.get("File-Chunk-Status");
     const encodedFileName = request.headers.get("File-Name");
     if (!encodedFileName) {
         return new Response('Missing File-Name header', { status: 400 });
     }
 
-    const userId = request.headers.get("User-Id");
+    const userId = locals.user?.id;
     if (!userId) {
         return new Response('Missing User-Id header', { status: 400 });
     }
