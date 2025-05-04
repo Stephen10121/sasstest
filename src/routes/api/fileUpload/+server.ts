@@ -17,11 +17,12 @@ export async function POST({ request, locals }) {
     const hashedId = createHash('sha256').update(userId).digest("hex");
 
     const filePathHeaderEncoded = request.headers.get("File-Path");
-    if (!filePathHeaderEncoded) {
-        return new Response('Missing File-Path header', { status: 400 });
+    let filePathHeader = "";
+    if (filePathHeaderEncoded) {
+        filePathHeader = decodeURI(filePathHeaderEncoded);
     }
 
-    const filePathHeader = decodeURI(filePathHeaderEncoded);
+    // const filePathHeader = decodeURI(filePathHeaderEncoded);
     const fileName = decodeURI(encodedFileName);
     
     try {

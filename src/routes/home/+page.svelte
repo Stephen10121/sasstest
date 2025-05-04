@@ -299,6 +299,10 @@
 	{/if}
 </Dialog.Root>
 
+{#if $showUploadDialog}
+	<FileUploader filePath={currentPathStr} />
+{/if}
+
 <style>
     .aLink:hover span {
         text-decoration: underline;

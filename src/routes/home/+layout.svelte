@@ -1,9 +1,7 @@
 <script lang="ts">
     import Sidebar from "@/Sidebar.svelte";
 
-    let { data, children } = $props();
-
-    console.log(data.userDir);
+    let { children } = $props();
 </script>
 
 <div class="flex flex-1 overflow-hidden">

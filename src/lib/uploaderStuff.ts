@@ -47,7 +47,7 @@ export class FileUploadTracker {
     }
 }
 
-async function uploadBlobToServer(blob: Blob, fileTracker: FileUploadTracker, fileName: string, userId: string, filePath: string) {
+async function uploadBlobToServer(blob: Blob, fileTracker: FileUploadTracker, fileName: string, filePath: string) {
     console.log("uploading blob to server. Blob size:", blob.size);
     let bytesUploaded = 0;
     try {
@@ -67,7 +67,6 @@ async function uploadBlobToServer(blob: Blob, fileTracker: FileUploadTracker, fi
                 "Content-Type": 'application/octet-stream',
                 "File-Chunk-Status": fileTracker.first ? "first" : "middle",
                 "File-Name": encodeURI(fileName),
-                "User-Id": userId,
                 "File-Path": encodeURI(filePath)
             },
             body: blob.stream().pipeThrough(progressTrackingStream),
@@ -88,7 +87,7 @@ async function uploadBlobToServer(blob: Blob, fileTracker: FileUploadTracker, fi
     };
 }
 
-export async function uploadFile(file: File, fileTracker: FileUploadTracker, userId: string, filePath: string) {
+export async function uploadFile(file: File, fileTracker: FileUploadTracker, filePath: string) {
     const fileSize = file.size;
     // const CHUCK_SIZE = 52428800; // 50MB 303 Seconds
     const CHUCK_SIZE = 103809024; // 99MB 282 Seconds
@@ -99,13 +98,13 @@ export async function uploadFile(file: File, fileTracker: FileUploadTracker, use
 
     while (chunk < numFullChunks) {
         const offset = chunk * CHUCK_SIZE;
-        await uploadBlobToServer(file.slice(offset, offset + CHUCK_SIZE), fileTracker, file.name, userId, filePath);
+        await uploadBlobToServer(file.slice(offset, offset + CHUCK_SIZE), fileTracker, file.name, filePath);
         chunk++;
     }
 
     if (partialChunkSize > 0) {
         const offset = chunk * CHUCK_SIZE;
-        await uploadBlobToServer(file.slice(offset, offset + CHUCK_SIZE), fileTracker, file.name, userId, filePath);
+        await uploadBlobToServer(file.slice(offset, offset + CHUCK_SIZE), fileTracker, file.name, filePath);
     }
 
     if (fileTracker.charsUploaded === fileSize) {
