@@ -13,7 +13,7 @@
 	import { Label } from "$lib/components/ui/label/index.js";
     import { enhance } from "$app/forms";
 	import { toast } from "svelte-sonner";
-    import { updated } from "$app/state";
+    import { showNewFolderDialog, showUploadDialog } from "@/store.js";
 
     let { data, form } = $props();
 
@@ -21,9 +21,6 @@
     let currentPath = $derived(getValue(data.userDir, currentPathStr))
 
     let viewMode = $state<"grid" | "list">("list");
-    let showUploadDialog = $state(false);
-    let showNewFolderDialog = $state(false);
-
 	let renamefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 	let deletefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 </script>
@@ -51,12 +48,12 @@
 					</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
-					<DropdownMenu.Item on:click={() => invalidateAll()}>
+					<DropdownMenu.Item on:click={() => $showNewFolderDialog = true}>
 						<Folder class="mr-2 h-4 w-4" />
 						<span>New Folder</span>
 					</DropdownMenu.Item>
 					<DropdownMenu.Separator />
-					<DropdownMenu.Item on:click={() => showUploadDialog = true}>
+					<DropdownMenu.Item on:click={() => $showUploadDialog = true}>
 						<Upload class="mr-2 h-4 w-4" />
 						<span>File Upload</span>
 					</DropdownMenu.Item>
@@ -207,6 +204,52 @@
 			</form>
 			<Dialog.Footer>
 				<Button type="submit" form="renameFileForm">Rename</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	{/if}
+</Dialog.Root>
+
+<Dialog.Root open={$showNewFolderDialog} onOpenChange={(e) => {if (!e) $showNewFolderDialog = false}}>
+	{#if $showNewFolderDialog}
+		<Dialog.Content class="sm:max-w-[425px]">
+			<Dialog.Header>
+				<Dialog.Title>Create Folder</Dialog.Title>
+				<Dialog.Description>
+					Make sure not to user characters like "/".
+				</Dialog.Description>
+			</Dialog.Header>
+			<form
+				id="makeFolderForm"
+				method="POST"
+				action="?/createFolder"
+				class="grid gap-4 py-4"
+				use:enhance={() => {
+					const tLoadingMsg = toast.loading(`Creating Folder.`);
+
+					return async ({ update }) => {
+						await update();
+						toast.dismiss(tLoadingMsg);
+						if (form) {
+							if(form.success) {
+								toast.success("Created Folder!");
+								$showNewFolderDialog = false;
+							} else {
+								toast.error("Failed to Create Folder", {
+									description: form.errorMsg
+								})
+							}
+						}
+					}
+				}}
+			>
+				<input type="hidden" name="filePath" value={currentPathStr} />
+				<div class="flex flex-col gap-2">
+					<Label for="folderName" class="text-left">Folder Name</Label>
+					<Input id="folderName" autocomplete="off" autocorrect="off" name="folderName" class="col-span-3" />
+				</div>
+			</form>
+			<Dialog.Footer>
+				<Button type="submit" form="makeFolderForm">Create</Button>
 			</Dialog.Footer>
 		</Dialog.Content>
 	{/if}

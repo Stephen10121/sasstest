@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { existsSync, renameSync, rmSync, unlinkSync } from "fs";
+import { existsSync, mkdirSync, renameSync, rmSync, unlinkSync } from "fs";
 import path from "path";
 
 export const actions = {
@@ -146,6 +146,75 @@ export const actions = {
             return {
                 success: false,
                 errorMsg: "Failed to delete " + fileOrFolder+ "."
+            }
+        }
+    },
+    createFolder: async ({ locals, request }) => {
+        const id = locals.user?.id;
+        if (!id) {
+            return {
+                success: false,
+                errorMsg: "Unauthorized Access."
+            }
+        }
+
+        const hashedId = createHash('sha256').update(id).digest("hex");
+        const formData = await request.formData();
+        const filePath = formData.get("filePath") as string;
+        const folderName = formData.get("folderName") as string;
+
+        if (!filePath || !folderName) {
+            return {
+                success: false,
+                errorMsg: "Missing Parameters."
+            }
+        }
+        
+        if (filePath.includes("\\") || filePath.includes("../")) {
+            return {
+                success: false,
+                errorMsg: "Invalid Folder Path."
+            }
+        }
+
+        if (folderName.includes("\\") || folderName.includes("/")) {
+            return {
+                success: false,
+                errorMsg: "Invalid Folder Name."
+            }
+        }
+
+        if (!existsSync("./files/" + hashedId)) {
+            return {
+                success: false,
+                errorMsg: "Invalid User Id."
+            }
+        }
+
+        const oldFile = path.resolve("./files/" + path.join(hashedId, filePath.split("/").slice(2).join("/")));
+        if(!existsSync(oldFile)) {
+            return {
+                success: false,
+                errorMsg: "Folder Path Doesn't Exist."
+            }
+        }
+
+        const newFolder = path.resolve("./files/" + path.join(hashedId, filePath.split("/").slice(2).join("/"), folderName));
+        if(existsSync(newFolder)) {
+            return {
+                success: false,
+                errorMsg: "Folder already Exists."
+            }
+        }
+
+        try {
+            mkdirSync(newFolder);
+            return { success: true } 
+        } catch (err) {
+            console.log(err);
+            return {
+                success: false,
+                errorMsg: "Failed to create folder."
             }
         }
     }

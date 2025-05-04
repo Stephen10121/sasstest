@@ -1,15 +1,31 @@
 <script lang="ts">
     import { Button } from "$lib/components/ui/button";
-    import { Clock, Computer, HardDrive, Plus, Share2, Star, Trash2 } from "lucide-svelte";
+    import { ChevronDown, Clock, Computer, Folder, HardDrive, Plus, Share2, Star, Trash2, Upload } from "lucide-svelte";
     import { Progress } from "$lib/components/ui/progress";
+    import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+    import { showNewFolderDialog, showUploadDialog } from "./store";
 </script>
 
 <div class="w-64 border-r p-4">
-    <Button class="mb-6 w-full justify-start gap-2 rounded-full">
-      <Plus size={18} />
-      <span>New</span>
-    </Button>
-
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild let:builder>
+        <Button builders={[builder]} class="mb-6 w-full justify-start gap-2 rounded-full">
+          <Plus size={18} />
+          <span>New</span>
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content align="center">
+        <DropdownMenu.Item on:click={() => $showNewFolderDialog = true}>
+          <Folder class="mr-2 h-4 w-4" />
+          <span>New Folder</span>
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item on:click={() => $showUploadDialog = true}>
+          <Upload class="mr-2 h-4 w-4" />
+          <span>File Upload</span>
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
     <nav class="space-y-1">
       <a href="/drive" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-muted/50">
         <HardDrive size={18} />
