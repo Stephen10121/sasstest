@@ -19,7 +19,7 @@
         <h1 class="text-xl font-semibold">MyDrive</h1>
         </div>
         <div class="ml-auto flex items-center gap-4">
-        <div class="relative">
+        <div class="relative hidden md:block">
             <input
             type="search"
             placeholder="Search in Drive"

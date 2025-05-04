@@ -118,12 +118,12 @@
                 {#each Object.entries(currentPath) as [fileName, fileInfo] ("afile"+fileName)}
                     <div class="grid grid-cols-12 gap-4 border-b p-4 text-sm">
 						{#if fileInfo.type === "folder"}
-							<button onclick={() => currentPathStr = currentPathStr + `${fileName}/`} class="col-span-6 flex items-center gap-3 aLink">
+							<button onclick={() => currentPathStr = currentPathStr + `${fileName}/`} class="text-left gridLink aLink">
 								<GetFileIcon iconType={fileInfo.extension} />
 								<span>{fileName}</span>
 							</button>
 						{:else}
-							<button class="col-span-6 flex items-center gap-3 aLink">
+							<button class="text-left gridLink aLink">
 								<GetFileIcon iconType={fileInfo.extension} />
 								<span>{fileName}</span>
 							</button>
@@ -307,4 +307,19 @@
     .aLink:hover span {
         text-decoration: underline;
     }
+
+	.gridLink {
+		grid-column: span 6 / span 6;
+		column-gap: 15px;
+		display: grid;
+		align-items: center;
+		grid-template-columns: 24px auto;
+	}
+
+	.gridLink span {
+		width: 100%;
+		white-space: nowrap;
+  		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 </style>

@@ -6,7 +6,7 @@
     import { showNewFolderDialog, showUploadDialog } from "./store";
 </script>
 
-<div class="w-64 border-r p-4">
+<div class="w-64 border-r p-4 hidden md:block">
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild let:builder>
         <Button builders={[builder]} class="mb-6 w-full justify-start gap-2 rounded-full">
