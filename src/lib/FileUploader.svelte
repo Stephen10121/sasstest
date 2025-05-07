@@ -54,9 +54,9 @@
 
         fileUploadTracker.setProgressCallback((progress) => {
             if (loadingToast) {
-                loadingToast = toast.loading(`${progress}% Uploading "${file.name}"`, {id: loadingToast, duration: 10000});
+                loadingToast = toast.loading(`${progress}% Uploading "${file.name}"`, {id: loadingToast, duration: 240000});
             } else {
-                loadingToast = toast.loading(`${progress}% Uploading "${file.name}"`, { duration: 10000});
+                loadingToast = toast.loading(`${progress}% Uploading "${file.name}"`, { duration: 240000});
             }
             // toast.
             // fileUploadStatus = `${progress}% done.`;
