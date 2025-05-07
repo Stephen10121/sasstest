@@ -1,9 +1,10 @@
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync } from 'fs';
 import { writeFile, appendFile } from 'fs/promises';
 import path from 'path';
 
 export async function POST({ request, locals }) {
+    console.log("File Upload");
     const fileChunkStatus = request.headers.get("File-Chunk-Status");
     const encodedFileName = request.headers.get("File-Name");
     if (!encodedFileName) {
