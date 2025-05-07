@@ -39,7 +39,7 @@ export async function POST({ request, locals }) {
         }
         
         if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader))) && !filePathHeader.includes("../")) {
-            if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader, fileName)))) {
+            if (existsSync(path.resolve("./files/" + path.join(hashedId, filePathHeader, fileName))) && (fileChunkStatus === "first" || fileChunkStatus === "firstlast")) {
                 return new Response('File Already Exists', { status: 409, statusText: "File Already Exists" });
             }
             const readableStream = request.body;
