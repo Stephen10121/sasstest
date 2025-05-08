@@ -20,7 +20,7 @@
     let currentPathStr = $state("/home/");
     let currentPath = $derived(getValue(data.userDir, currentPathStr))
 
-    let viewMode = $state<"grid" | "list">("list");
+    let viewMode: "grid" | "list" = $state("grid");
 	let renamefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 	let deletefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 	let filePreviewPopup: null | { fileName: string, filePath: string } = $state(null);
@@ -212,14 +212,6 @@
             {/if}
 		</div>
 	{/if}
-
-	<!-- <FileUploadDialog
-	open={showUploadDialog}
-	onOpenChange={setShowUploadDialog}
-	onUpload={(name, type, size) => addNewFile(name, type, size)}
-	/>
-
-	<NewFolderDialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog} onCreateFolder={addNewFolder} /> -->
 </div>
 
 <Dialog.Root open={renamefilePopup !== null} onOpenChange={(e) => {if (!e) renamefilePopup = null}}>
