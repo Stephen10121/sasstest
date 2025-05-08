@@ -6,8 +6,13 @@
 
 <section>
     <video id="videoPlayerCool" controls autoplay>
-        <source src="/api/fileStream?fileName={encodeURI(fileName)}&filePath={encodeURI(filePathParsed)}">
+        <source src="/api/fileStream?fileName={encodeURIComponent(fileName)}&filePath={encodeURIComponent(filePathParsed)}">
         <track kind="captions">
+        <a
+            href="https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4"
+            download="ed_1024_512kb.mp4">
+            Download
+        </a>
     </video>
     <button title="Close Preview" onclick={() => close()}>✕</button>
 </section>
@@ -27,6 +32,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    video {
+        max-width: 600px;
+        width: 100%;
     }
 
     button {

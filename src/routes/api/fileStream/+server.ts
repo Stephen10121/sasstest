@@ -6,6 +6,7 @@ import path from 'path';
 import { Readable } from 'node:stream';
 
 export async function GET({ request, locals, url }) {
+    console.log("Checking something.", request.headers)
     const encodedFileName = url.searchParams.get("fileName") //headers.get("File-Name");
     if (!encodedFileName) {
         return new Response('Missing File-Name header', { status: 400 });
@@ -20,11 +21,11 @@ export async function GET({ request, locals, url }) {
     const filePathHeaderEncoded =  url.searchParams.get("filePath");//request.headers.get("File-Path");
     let filePathHeader = "";
     if (filePathHeaderEncoded) {
-        filePathHeader = decodeURI(filePathHeaderEncoded);
+        filePathHeader = decodeURIComponent(filePathHeaderEncoded);
     }
 
     // const filePathHeader = decodeURI(filePathHeaderEncoded);
-    const fileName = decodeURI(encodedFileName);
+    const fileName = decodeURIComponent(encodedFileName);
 
     const range = request.headers.get("Range");
     if (!range) {
@@ -65,7 +66,7 @@ export async function GET({ request, locals, url }) {
 
                 // Stream The Video.
             } else {
-                return new Response("File Doesn't Exist", { status: 409, statusText: "File Already Exists" });
+                return new Response("File Doesn't Exist", { status: 409, statusText: "File Doesn't Exist" });
             }
         } else {
             return new Response('Invalid File Path', { status: 400 });
