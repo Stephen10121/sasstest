@@ -26,7 +26,7 @@
 	let filePreviewPopup: null | { fileName: string, filePath: string } = $state(null);
 
 	async function downloadFile(fileName: string) {
-		const response = await fetch("/api/fileDownload", {
+		const response = await fetch(`/api/fileDownload?fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(currentPathStr.split("/").slice(2).join("/"))}`, {
             method: "GET",
             headers: {
                 "Content-Type": 'application/octet-stream',
@@ -39,7 +39,34 @@
 			console.log("Couldnt Download File");
 			return
 		}
-		const blob = await response.blob();
+		// Create a stream reader
+		const reader = response.body?.getReader();
+		const chunks: Uint8Array[] = [];
+		let receivedBytes = 0;
+
+		let downloadToast = toast.loading("Downloading File 0%");
+
+		if (reader) {
+			const contentLength = response.headers.get('Content-Length');
+			const totalSize = contentLength ? parseInt(contentLength, 10) : undefined;
+			
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				chunks.push(value);
+				receivedBytes += value.length;
+
+				// Display download progress
+				if (totalSize) {
+					toast.loading(`Downloading File ${((receivedBytes / totalSize) * 100).toFixed()}%`, { id: downloadToast });
+					// console.log(`Downloaded ${receivedBytes} / ${totalSize} bytes (${((receivedBytes / totalSize) * 100).toFixed()}%)`);
+				}
+			}
+		}
+
+		// Convert chunks to a Blob and trigger download
+		const blob = new Blob(chunks);
+		// const blob = await response.blob();
 		const url = URL.createObjectURL(blob);
 		
 		// Trigger a download
@@ -49,6 +76,8 @@
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
+		toast.dismiss(downloadToast);
+		toast.success("Successfully Downloaded File")
 		console.log("Downloading file", fileName, response);
 	}
 </script>

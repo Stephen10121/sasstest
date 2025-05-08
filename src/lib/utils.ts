@@ -112,4 +112,4 @@ export function getValue(obj: { [key: string]: FileInfo }, keyString: string) {
 	  }
 	}
 	return current;
-  }
+}
