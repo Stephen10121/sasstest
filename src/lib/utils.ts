@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
+import type { IPicture } from "music-metadata";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -112,4 +113,18 @@ export function getValue(obj: { [key: string]: FileInfo }, keyString: string) {
 	  }
 	}
 	return current;
+}
+
+export type AudioMetadataResponse = {
+    error: true;
+    title: null;
+    artist: null;
+    album: null;
+	pictures: null;
+} | {
+    error: false;
+    title: string;
+    artist: string;
+    album: string;
+	pictures: IPicture[];
 }
