@@ -363,7 +363,7 @@
 {#if filePreviewPopup !== null}
 	<FilePreview fileName={filePreviewPopup.fileName} filePath={filePreviewPopup.filePath} close={() => {
 		filePreviewPopup = null;
-	}} />
+	}} download={downloadFile} />
 {/if}
 
 {#if $showUploadDialog}
