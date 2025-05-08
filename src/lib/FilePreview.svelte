@@ -14,7 +14,7 @@
             Download
         </a>
     </video>
-    <button title="Close Preview" onclick={() => close()}>✕</button>
+    <button class="dark:bg-black" title="Close Preview" onclick={() => close()}>✕</button>
 </section>
 
 <style>
