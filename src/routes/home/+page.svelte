@@ -1,10 +1,9 @@
 <script lang="ts">
     import FileUploader from "$lib/FileUploader.svelte";
-    import { Button, buttonVariants } from "$lib/components/ui/button";
+    import { Button } from "$lib/components/ui/button";
     import { Card } from "@/components/ui/card"
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import { ChevronDown, Folder, Grid3X3, List, MoreVertical, Plus, Upload } from "lucide-svelte";
-    import { invalidateAll } from "$app/navigation";
     import GetFileIcon from "@/GetFileIcon.svelte";
     import { getValue, prettyDate, prettySize } from "@/utils.js";
     import DirPath from "@/DirPath.svelte";
@@ -14,6 +13,7 @@
     import { enhance } from "$app/forms";
 	import { toast } from "svelte-sonner";
     import { showNewFolderDialog, showUploadDialog } from "@/store.js";
+    import FilePreview from "@/FilePreview.svelte";
 
     let { data, form } = $props();
 
@@ -23,6 +23,34 @@
     let viewMode = $state<"grid" | "list">("list");
 	let renamefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
 	let deletefilePopup: null | { fileName: string, type: "file" | "folder", filePath: string } = $state(null);
+	let filePreviewPopup: null | { fileName: string, filePath: string } = $state(null);
+
+	async function downloadFile(fileName: string) {
+		const response = await fetch("/api/fileDownload", {
+            method: "GET",
+            headers: {
+                "Content-Type": 'application/octet-stream',
+                "File-Name": encodeURI(fileName),
+                "File-Path": encodeURI(currentPathStr.split("/").slice(2).join("/"))
+            }
+        })
+
+		if (!response.ok) {
+			console.log("Couldnt Download File");
+			return
+		}
+		const blob = await response.blob();
+		const url = URL.createObjectURL(blob);
+		
+		// Trigger a download
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = fileName;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		console.log("Downloading file", fileName, response);
+	}
 </script>
 
 <div>
@@ -78,7 +106,9 @@
 									<DropdownMenu.Content align="end">
 										<DropdownMenu.Item onclick={() => {renamefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}}>Rename</DropdownMenu.Item>
 										<DropdownMenu.Item>Share</DropdownMenu.Item>
-										<DropdownMenu.Item>Download</DropdownMenu.Item>
+										{#if fileInfo.type === "file"}
+											<DropdownMenu.Item onclick={() => downloadFile(fileName)}>Download</DropdownMenu.Item>
+										{/if}
 										<DropdownMenu.Separator />
 										<DropdownMenu.Item onclick={() => {deletefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}} class="text-red-500">Delete</DropdownMenu.Item>
 									</DropdownMenu.Content>
@@ -90,7 +120,7 @@
 										<span><h3 class="font-medium line-clamp-2">{fileName}</h3></span>
 									</button>
 								{:else}
-									<button class="aLink text-left">
+									<button onclick={() => filePreviewPopup = { fileName, filePath: currentPathStr }} class="aLink text-left">
 										<span><h3 class="font-medium line-clamp-2">{fileName}</h3></span>
 									</button>
 								{/if}
@@ -123,7 +153,7 @@
 								<span>{fileName}</span>
 							</button>
 						{:else}
-							<button class="text-left gridLink aLink">
+							<button onclick={() => filePreviewPopup = { fileName, filePath: currentPathStr }} class="text-left gridLink aLink">
 								<GetFileIcon iconType={fileInfo.extension} />
 								<span>{fileName}</span>
 							</button>
@@ -140,7 +170,9 @@
                                 <DropdownMenu.Content align="end">
                                     <DropdownMenu.Item onclick={() => {renamefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}}>Rename</DropdownMenu.Item>
                                     <DropdownMenu.Item>Share</DropdownMenu.Item>
-                                    <DropdownMenu.Item>Download</DropdownMenu.Item>
+                                    {#if fileInfo.type === "file"}
+										<DropdownMenu.Item onclick={() => downloadFile(fileName)}>Download</DropdownMenu.Item>
+									{/if}
                                     <DropdownMenu.Separator />
                                     <DropdownMenu.Item onclick={() => {deletefilePopup = { fileName, filePath: currentPathStr, type: fileInfo.type }}} class="text-red-500">Delete</DropdownMenu.Item>
                                 </DropdownMenu.Content>
@@ -298,6 +330,12 @@
 		</Dialog.Content>
 	{/if}
 </Dialog.Root>
+
+{#if filePreviewPopup !== null}
+	<FilePreview fileName={filePreviewPopup.fileName} filePath={filePreviewPopup.filePath} close={() => {
+		filePreviewPopup = null;
+	}} />
+{/if}
 
 {#if $showUploadDialog}
 	<FileUploader filePath={currentPathStr} />
